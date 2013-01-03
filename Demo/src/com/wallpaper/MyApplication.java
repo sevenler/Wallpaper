@@ -9,7 +9,7 @@ import com.nostra13.universalimageloader.cache.memory.impl.FIFOLimitedMemoryCach
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-public class GDApplication extends Application {
+public class MyApplication extends Application {
 
 	@Override
 	public void onCreate() {
