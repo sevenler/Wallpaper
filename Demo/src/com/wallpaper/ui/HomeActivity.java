@@ -1,9 +1,10 @@
 package com.wallpaper.ui;
 
-import java.io.File;
+import java.util.Arrays;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -13,44 +14,62 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
+import com.wallpaper.Const;
 import com.wallpaper.R;
+import com.wallpaper.task.ImgListUpdateFromTagTask;
+import com.wallpaper.task.OnProgressListenner;
+import com.wallpaper.utils.DisplayManager;
+import com.wallpaper.utils.LOG;
+import com.wallpaper.utils.Utils;
 
 public class HomeActivity extends BaseActivity {
 	private String[] imags = {};
-	
+
+	private static final ImageSize IMAGE_SIZE = new ImageSize(
+			DisplayManager.getInstance().getWallpaperWidth(), 
+			DisplayManager.getInstance().getWallpaperHeight());
+	private static final ImageSize IMAGE_THUBMNAIL_SIZE = new ImageSize(200, 200);
+	private static final int LIMIT_EACH_PAGE = 400;
+	private int skip = 0;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		imags = getImagsFormDir();
-		GridView grid = (GridView)findViewById(R.id.grid_view);
+
+		GridView grid = (GridView) findViewById(R.id.grid_view);
 		final ClassAdapter adapter = new ClassAdapter();
 		grid.setAdapter(adapter);
+		final Handler handler = new Handler();
+
+		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, IMAGE_SIZE, skip, LIMIT_EACH_PAGE).setOnProgressListenner(new OnProgressListenner() {
+			@Override
+			public void onFinish(Object... result) {
+				final String[] urls = (String[]) result[1];
+				if (LOG.isLoggindAble) LOG.i(HomeActivity.this, String.format("get images:%s", Arrays.toString(urls)));
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						imags = urls;
+						
+						////imags = Utils.Files.getImagsFormDir("/mnt/sdcard/androidesk/onekeywallpapers");
+						adapter.notifyDataSetInvalidated();
+					}
+				});
+			}
+		}).start();
 	}
-	
-	private final String IMAGES_DIR = "/mnt/sdcard/androidesk/onekeywallpapers";
-	private final String FORMAT_LOAD_URL = "file://%s/%s";
-	private String[] getImagsFormDir(){
-		File file = new File(IMAGES_DIR);
-		String[] imags = file.list();
-		for(int i = 0;i < imags.length;i++){
-			imags[i] = String.format(FORMAT_LOAD_URL, IMAGES_DIR, imags[i]);
-		}
-		return imags;
-	}
-	
+
 	private class ClassAdapter extends BaseAdapter {
 
 		DisplayImageOptions options = new DisplayImageOptions.Builder()
-			.showStubImage(R.drawable.ic_launcher)
-			.showImageForEmptyUri(R.drawable.ic_launcher)
-			.bitmapConfig(Bitmap.Config.RGB_565)
-			.cacheInMemory()
-			.cacheOnDisc()
-			.build();
-		
+				.showStubImage(R.drawable.ic_launcher)
+				.showImageForEmptyUri(R.drawable.ic_launcher)
+				.bitmapConfig(Bitmap.Config.RGB_565)
+				.cacheInMemory().cacheOnDisc().build();
+
 		@Override
 		public int getCount() {
 			return imags.length;
@@ -75,7 +94,11 @@ public class HomeActivity extends BaseActivity {
 				item = (View) convertView;
 			}
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
-			imageLoader.displayImage(imags[position], image, options, new SimpleImageLoadingListener() {
+
+			String url = Utils.Http.generateThumbImageUrl(IMAGE_THUBMNAIL_SIZE, imags[position]);
+			//url = imags[position];
+			if (LOG.isLoggindAble) LOG.i(HomeActivity.this, String.format("loading image:%s", url));
+			imageLoader.displayImage(url, image, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
 					Animation anim = AnimationUtils.loadAnimation(HomeActivity.this, R.anim.fade_in);
@@ -86,5 +109,4 @@ public class HomeActivity extends BaseActivity {
 			return item;
 		}
 	}
-
 }

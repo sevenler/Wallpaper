@@ -1,9 +1,11 @@
-package com.wallpaper;
+package com.wallpaper.utils;
 
 import android.util.Log;
 
 public class LOG {
 	private static final String PREFIX_FORMAT = "<%s>%s";
+	
+	public static final boolean isLoggindAble = true;
 	
 	public static void i(Object o, String msg){
 		String name = o.getClass().getSimpleName();
