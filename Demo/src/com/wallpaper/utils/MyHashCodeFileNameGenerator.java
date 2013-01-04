@@ -8,9 +8,6 @@ import com.nostra13.universalimageloader.cache.disc.naming.FileNameGenerator;
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class MyHashCodeFileNameGenerator implements FileNameGenerator {
-	
-	private static final String MESSAGE_LOAD_URL = "genarate name is %s";
-	
 	@Override
 	public String generate(String imageUri) {
 		if(imageUri.contains("src=")){
@@ -21,7 +18,6 @@ public class MyHashCodeFileNameGenerator implements FileNameGenerator {
 				imageUri = imageUri.split("&")[0];
 			}
 		}
-		if (LOG.isLoggindAble) LOG.i(this, String.format(MESSAGE_LOAD_URL, imageUri));
 		return String.valueOf(imageUri.hashCode());
 	}
 }
