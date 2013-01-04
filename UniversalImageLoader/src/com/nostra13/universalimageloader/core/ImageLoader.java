@@ -198,7 +198,7 @@ public class ImageLoader {
 		}
 
 		ImageSize targetSize = getImageSizeScaleTo(imageView);
-		String memoryCacheKey = MemoryCacheUtil.generateKey(uri, targetSize);
+		String memoryCacheKey = MemoryCacheUtil.generateKey(configuration.memoryCacheKeyGenarator.generate(uri), targetSize);
 		cacheKeysForImageViews.put(imageView.hashCode(), memoryCacheKey);
 
 		Bitmap bmp = configuration.memoryCache.get(memoryCacheKey);
@@ -219,7 +219,7 @@ public class ImageLoader {
 			}
 
 			initExecutorsIfNeed();
-			ImageLoadingInfo imageLoadingInfo = new ImageLoadingInfo(uri, imageView, targetSize, options, listener, getLockForUri(uri));
+			ImageLoadingInfo imageLoadingInfo = new ImageLoadingInfo(uri, imageView, targetSize, options, listener, getLockForUri(uri), memoryCacheKey);
 			LoadAndDisplayImageTask displayImageTask = new LoadAndDisplayImageTask(configuration, imageLoadingInfo, new Handler());
 			boolean isImageCachedOnDisc = configuration.discCache.get(uri).exists();
 			if (isImageCachedOnDisc) {

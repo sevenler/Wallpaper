@@ -46,7 +46,9 @@ public final class ImageLoaderConfiguration {
 	final DisplayImageOptions defaultDisplayImageOptions;
 	final ThreadFactory displayImageThreadFactory;
 	final boolean loggingEnabled;
-
+	
+	final FileNameGenerator memoryCacheKeyGenarator;
+	
 	private ImageLoaderConfiguration(final Builder builder) {
 		maxImageWidthForMemoryCache = builder.maxImageWidthForMemoryCache;
 		maxImageHeightForMemoryCache = builder.maxImageHeightForMemoryCache;
@@ -70,6 +72,7 @@ public final class ImageLoaderConfiguration {
 				return t;
 			}
 		};
+		memoryCacheKeyGenarator = builder.memoryCacheKeyGenarator;
 	}
 
 	/**
@@ -144,7 +147,13 @@ public final class ImageLoaderConfiguration {
 		private DisplayImageOptions defaultDisplayImageOptions = null;
 
 		private boolean loggingEnabled = false;
-
+		
+		private  FileNameGenerator memoryCacheKeyGenarator;
+		public Builder memoryCacheKeyGenarator(FileNameGenerator memoryCacheKeyGenarator){
+			this.memoryCacheKeyGenarator = memoryCacheKeyGenarator;
+			return this;
+		}
+		
 		public Builder(Context context) {
 			this.context = context;
 		}

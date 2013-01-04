@@ -27,13 +27,13 @@ final class ImageLoadingInfo {
 	final ImageLoadingListener listener;
 	final ReentrantLock loadFromUriLock;
 
-	public ImageLoadingInfo(String uri, ImageView imageView, ImageSize targetSize, DisplayImageOptions options, ImageLoadingListener listener, ReentrantLock loadFromUriLock) {
+	public ImageLoadingInfo(String uri, ImageView imageView, ImageSize targetSize, DisplayImageOptions options, ImageLoadingListener listener, ReentrantLock loadFromUriLock, String memoryCacheKey) {
 		this.uri = Uri.encode(uri, "@#&=*+-_.,:!?()/~'%");
 		this.imageView = imageView;
 		this.targetSize = targetSize;
 		this.options = options;
 		this.listener = listener;
 		this.loadFromUriLock = loadFromUriLock;
-		memoryCacheKey = MemoryCacheUtil.generateKey(uri, targetSize);
+		this.memoryCacheKey = memoryCacheKey;
 	}
 }

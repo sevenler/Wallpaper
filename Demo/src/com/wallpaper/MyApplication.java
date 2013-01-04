@@ -25,6 +25,7 @@ public class MyApplication extends Application {
 			.denyCacheImageMultipleSizesInMemory()
 			.discCacheExtraOptions(displayMetrics.widthPixels, displayMetrics.heightPixels, Bitmap.CompressFormat.JPEG, 100)
 			.discCacheFileNameGenerator(new MyHashCodeFileNameGenerator())
+			.memoryCacheKeyGenarator(new MyHashCodeFileNameGenerator())
 			.enableLogging()
 			.build();
 		ImageLoader.getInstance().init(config);
