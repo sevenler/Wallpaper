@@ -7,13 +7,13 @@ import android.view.WindowManager;
 
 public class DisplayManager {
 	private static DisplayManager instance = null;
-	private int displayWidth = 0; // 显示器宽
-	private int displayHeight = 0; // 显示器高
-	private int desiredWidth = 0; // 壁纸区宽(api版，有可能爲0或者-1什么的，有时靠谱有时不行)
-	private int desiredHeight = 0; // 壁纸区高(api版，有可能爲0或者-1什么的，有时靠谱有时不行)
-	private int wallpaperWidth = 0; // 壁纸区宽(估算版，如果desiredWidth有问题，则调整成displayWidth或者2倍displayWidth)
-	private int wallpaperHeight = 0; // 壁纸区高(估算版,如果desiredHeight有问题，则调整成displayHeight)
-	private int densityDpi = 0;// 屏幕密度Dpi（120 / 160 / 240）
+	private int displayWidth = 0;
+	private int displayHeight = 0;
+	private int desiredWidth = 0;
+	private int desiredHeight = 0;
+	private int wallpaperWidth = 0;
+	private int wallpaperHeight = 0;
+	private int densityDpi = 0;
 	private DisplayMetrics dm = null;
 
 	public static DisplayManager getInstance() {

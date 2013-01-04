@@ -20,10 +20,4 @@ public class Const {
 		public static final String TAG_CALSS_GRIL = "1";
 		public static final String TAG_CALSS_STAR = "3";
 	}
-	
-	public static final class HTTPS{
-		public static final int SO_TIMEOUT = 15000 * 2; 
-		public static final int BUFFER_SIZE = 8192; 
-		public static final int CONNECT_TIMEOUT = 1000 * 20;
-	}
 }

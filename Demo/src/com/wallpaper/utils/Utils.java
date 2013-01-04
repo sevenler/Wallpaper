@@ -32,11 +32,15 @@ public class Utils {
 	}
 
 	public static final class Http {
+		public static final int SO_TIMEOUT = 15000 * 2;
+		public static final int BUFFER_SIZE = 8192;
+		public static final int CONNECT_TIMEOUT = 1000 * 20;
+
 		public static HttpClient createHttpClient(Context context) {
 			HttpParams httpParams = new BasicHttpParams();
-			HttpConnectionParams.setConnectionTimeout(httpParams, Const.HTTPS.CONNECT_TIMEOUT);
-			HttpConnectionParams.setSoTimeout(httpParams, Const.HTTPS.SO_TIMEOUT);
-			HttpConnectionParams.setSocketBufferSize(httpParams, Const.HTTPS.BUFFER_SIZE);
+			HttpConnectionParams.setConnectionTimeout(httpParams, CONNECT_TIMEOUT);
+			HttpConnectionParams.setSoTimeout(httpParams, SO_TIMEOUT);
+			HttpConnectionParams.setSocketBufferSize(httpParams, BUFFER_SIZE);
 			HttpClientParams.setRedirecting(httpParams, true);
 			httpParams.setParameter("Connection", "closed");
 			HttpClient httpClient = new DefaultHttpClient(httpParams);

@@ -23,7 +23,7 @@ public class MyHttpClientImageDownloader extends ImageDownloader {
 	@Override
 	protected InputStream getStreamFromNetwork(URI imageUri) throws IOException {
 		HttpGet httpRequest = new HttpGet(imageUri.toString());
-		httpRequest.addHeader("Referer", "Referer:http://app.image.baidu.com");
+		httpRequest.addHeader("Referer", "http://app.image.baidu.com");
 		HttpResponse response = httpClient.execute(httpRequest);
 		HttpEntity entity = response.getEntity();
 		BufferedHttpEntity bufHttpEntity = new BufferedHttpEntity(entity);

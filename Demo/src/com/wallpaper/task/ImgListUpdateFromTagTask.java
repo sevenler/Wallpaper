@@ -12,12 +12,6 @@ import com.wallpaper.Const;
 import com.wallpaper.utils.LOG;
 import com.wallpaper.utils.MyURLConnectionImageDownloader;
 
-/**
- * 通过标签获取图片任务
- * 
- * @author androidesk
- * 
- */
 public class ImgListUpdateFromTagTask extends Thread {
 	
 	private static final String MESSAGE_LOAD_URL = "update class from %s";
