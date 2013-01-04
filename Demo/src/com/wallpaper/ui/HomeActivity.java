@@ -33,7 +33,9 @@ public class HomeActivity extends BaseActivity {
 			DisplayManager.getInstance().getWallpaperWidth(), 
 			DisplayManager.getInstance().getWallpaperHeight());
 	private static final ImageSize IMAGE_THUBMNAIL_SIZE = new ImageSize(200, 200);
-	private static final int LIMIT_EACH_PAGE = 30;
+	
+	private static final int GRID_COLUMES = 3;
+	private static final int LIMIT_EACH_PAGE = GRID_COLUMES * 10;
 	private int skip = 0;
 	private List<String> imags = new LinkedList<String>();
 	
@@ -87,7 +89,7 @@ public class HomeActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return imags.size();
+			return imags.size() - imags.size() % GRID_COLUMES;
 		}
 
 		@Override
