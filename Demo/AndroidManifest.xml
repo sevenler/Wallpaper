@@ -9,11 +9,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
         android:label="my app test"
-        android:targetPackage="com.example.demo_gridview_fast" />
+        android:targetPackage="com.wallpaper" />
 
     <application
         android:name=".MyApplication"
@@ -24,6 +25,7 @@
         <activity
             android:name=".ui.HomeActivity"
             android:label="@string/title_activity_main" >
+            
         </activity>
         <activity
             android:name=".ui.ImageActivity"

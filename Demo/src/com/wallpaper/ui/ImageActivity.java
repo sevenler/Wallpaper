@@ -1,51 +1,39 @@
 package com.wallpaper.ui;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.wallpaper.Const;
 import com.wallpaper.R;
+import com.wallpaper.model.Images;
 import com.wallpaper.task.ImgListUpdateFromTagTask;
 import com.wallpaper.task.OnProgressListenner;
 import com.wallpaper.utils.DisplayManager;
 import com.wallpaper.utils.LOG;
-import com.wallpaper.utils.Utils;
 
-public class ImageActivity extends BaseActivity {
+public class ImageActivity extends ReflushBaseActivity {
 
 	private static final ImageSize IMAGE_SIZE = new ImageSize(
 			DisplayManager.getInstance().getWallpaperWidth(), 
 			DisplayManager.getInstance().getWallpaperHeight());
-	private static final ImageSize IMAGE_THUBMNAIL_SIZE = new ImageSize(
-			DisplayManager.getInstance().getWallpaperWidth(), 
-			DisplayManager.getInstance().getWallpaperHeight());
 	
-	protected int mGridColumes = 3;
-	protected int mLimitEachPage = mGridColumes * 10;
-	protected int skip = 0;
-	protected List<String> imags = new LinkedList<String>();
 	protected Handler handler = new Handler();
 	protected SamplePagerAdapter adapter;
 
-	private static final String MESSAGE_GETED_IMAGES = "get %s images:%s";
-	private static final String MESSAGE_LOAD_IMAGE = "loading image:%s";
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,22 +42,36 @@ public class ImageActivity extends BaseActivity {
 		ViewPager pager = (ViewPager) findViewById(R.id.pager);
 		adapter = new SamplePagerAdapter();
 		pager.setAdapter(adapter);
+		pager.setOnPageChangeListener(new OnPageChangeListener() {
+			@Override
+			public void onPageSelected(int arg0) {
+				//到底后隐藏方向图标
+				if( (arg0 == (adapter.getCount() - 1))){
+					refreshToLoad();
+				}
+			}
+			
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) { }
+			
+			@Override
+			public void onPageScrollStateChanged(int arg0) { }
+		});
 		refreshToLoad();
 	}
 	
-	private void refreshToLoad(){
+	@Override
+	protected void refreshToLoad(){
 		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, IMAGE_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
-				final String[] urls = (String[]) result[1];
-				if (LOG.isLoggindAble) LOG.i(ImageActivity.this, String.format(MESSAGE_GETED_IMAGES,urls.length, Arrays.toString(urls)));
+				final Images imgs = (Images) result[0];
+				LOG.i(ImageActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						skip = skip + urls.length;
-						for(int i = 0;i < urls.length; i++){
-							imags.add(urls[i]);
-						}
+						skip = skip + images.size();
+						images.addAll(imgs.getAll());
 						adapter.notifyDataSetChanged();
 					}
 				});
@@ -82,24 +84,24 @@ public class ImageActivity extends BaseActivity {
 		DisplayImageOptions options = new DisplayImageOptions.Builder()
 		.showStubImage(R.drawable.ic_launcher)
 		.showImageForEmptyUri(R.drawable.ic_launcher)
-		.bitmapConfig(Bitmap.Config.RGB_565)
+		.bitmapConfig(Bitmap.Config.ARGB_8888)
 		.cacheInMemory().cacheOnDisc().build();
 		
 		@Override
 		public int getCount() {
-			return imags.size() - imags.size() % mGridColumes;
+			return images.size() - images.size() % mGridColumes;
 		}
 
 		@Override
 		public View instantiateItem(ViewGroup container, int position) {
-			
-			
 			View item = (View) getLayoutInflater().inflate(R.layout.item_image, null, false);
 			container.addView(item, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-			
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
-			String url = Utils.Http.generateThumbImageUrl(IMAGE_THUBMNAIL_SIZE, imags.get(position));
-			if (LOG.isLoggindAble) LOG.i(ImageActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
+			image.setLayoutParams(new LinearLayout.LayoutParams(DISPLAY_SIZE.getWidth(), DISPLAY_SIZE.getHeight()));
+			
+			System.out.println("-------------------");
+			String url = images.get(position).getSource();
+			LOG.i(ImageActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
 			imageLoader.displayImage(url, image, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
@@ -108,7 +110,6 @@ public class ImageActivity extends BaseActivity {
 					anim.start();
 				}
 			});
-			
 			return item;
 		}
 

@@ -1,9 +1,5 @@
 package com.wallpaper.ui;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,34 +12,20 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.wallpaper.Const;
 import com.wallpaper.R;
+import com.wallpaper.model.Images;
 import com.wallpaper.task.ImgListUpdateFromTagTask;
 import com.wallpaper.task.OnProgressListenner;
 import com.wallpaper.ui.MyScrollListener.onScrollListenner;
-import com.wallpaper.utils.DisplayManager;
 import com.wallpaper.utils.LOG;
 import com.wallpaper.utils.Utils;
 
-public class HomeActivity extends BaseActivity {
-
-	private static final ImageSize IMAGE_SIZE = new ImageSize(
-			DisplayManager.getInstance().getWallpaperWidth(), 
-			DisplayManager.getInstance().getWallpaperHeight());
-	private static final ImageSize IMAGE_THUBMNAIL_SIZE = new ImageSize(200, 200);
-	
-	protected int mGridColumes = 3;
-	protected int mLimitEachPage = mGridColumes * 10;
-	protected int skip = 0;
-	protected List<String> imags = new LinkedList<String>();
+public class HomeActivity extends ReflushBaseActivity {
 	protected Handler handler = new Handler();
 	protected ClassAdapter adapter;
 
-	private static final String MESSAGE_GETED_IMAGES = "get %s images:%s";
-	private static final String MESSAGE_LOAD_IMAGE = "loading image:%s";
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -61,27 +43,28 @@ public class HomeActivity extends BaseActivity {
 		refreshToLoad();
 	}
 	
-	private void refreshToLoad(){
-		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, IMAGE_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
+	@Override
+	protected void refreshToLoad(){
+		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, DISPLAY_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
-				final String[] urls = (String[]) result[1];
-				if (LOG.isLoggindAble) LOG.i(HomeActivity.this, String.format(MESSAGE_GETED_IMAGES,urls.length, Arrays.toString(urls)));
+				final Images imgs = (Images) result[0];
+				LOG.i(HomeActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
+				if((imgs == null) || (imgs.size() <= 0)) return;
+				
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						skip = skip + urls.length;
-						for(int i = 0;i < urls.length; i++){
-							imags.add(urls[i]);
-						}
+						images.addAll(imgs.getAll());
+						skip += imgs.size();
 						adapter.notifyDataSetChanged();
 					}
 				});
 			}
 		}).start();
 	}
+	
 	private class ClassAdapter extends BaseAdapter {
-
 		DisplayImageOptions options = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.ic_launcher)
 				.showImageForEmptyUri(R.drawable.ic_launcher)
@@ -90,7 +73,7 @@ public class HomeActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return imags.size() - imags.size() % mGridColumes;
+			return images.size() - images.size() % mGridColumes;
 		}
 
 		@Override
@@ -113,9 +96,8 @@ public class HomeActivity extends BaseActivity {
 			}
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
 
-			String url = Utils.Http.generateThumbImageUrl(IMAGE_THUBMNAIL_SIZE, imags.get(position));
-			url = imags.get(position);
-			if (LOG.isLoggindAble) LOG.i(HomeActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
+			String url = Utils.Http.generateThumbImageUrl(Utils.Images.getImageSizeScaleTo(image), images.get(position).getSource());
+			LOG.i(HomeActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
 			imageLoader.displayImage(url, image, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {

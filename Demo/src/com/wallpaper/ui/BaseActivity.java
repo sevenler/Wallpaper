@@ -4,23 +4,23 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
+import com.wallpaper.utils.DisplayManager;
 
 public abstract class BaseActivity extends Activity {
 
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
-
-	private boolean instanceStateSaved;
+	
+	protected static final ImageSize DISPLAY_SIZE = new ImageSize(
+					DisplayManager.getInstance().getDisplayWidth(), 
+					DisplayManager.getInstance().getDisplayHeight());
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		instanceStateSaved = true;
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (!instanceStateSaved) {
-			imageLoader.stop();
-		}
 		super.onDestroy();
 	}
 }

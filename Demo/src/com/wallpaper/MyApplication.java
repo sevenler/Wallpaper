@@ -7,8 +7,10 @@ import android.util.DisplayMetrics;
 import com.nostra13.universalimageloader.cache.memory.impl.FIFOLimitedMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.wallpaper.utils.DisplayManager;
 import com.wallpaper.utils.MyHashCodeFileNameGenerator;
+import com.wallpaper.utils.MyHttpImageDownloader;
 
 public class MyApplication extends Application {
 
@@ -26,6 +28,9 @@ public class MyApplication extends Application {
 			.discCacheExtraOptions(displayMetrics.widthPixels, displayMetrics.heightPixels, Bitmap.CompressFormat.JPEG, 100)
 			.discCacheFileNameGenerator(new MyHashCodeFileNameGenerator())
 			.memoryCacheKeyGenarator(new MyHashCodeFileNameGenerator())
+			.tasksProcessingOrder(QueueProcessingType.FIFO)
+			.imageDownloader(new MyHttpImageDownloader())
+			.enableLogging()
 			.build();
 		ImageLoader.getInstance().init(config);
 		
