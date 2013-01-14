@@ -12,9 +12,11 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.wallpaper.Const;
 import com.wallpaper.R;
+import com.wallpaper.model.Image;
 import com.wallpaper.model.Images;
 import com.wallpaper.task.ImgListUpdateFromTagTask;
 import com.wallpaper.task.OnProgressListenner;
@@ -51,12 +53,12 @@ public class HomeActivity extends ReflushBaseActivity {
 				final Images imgs = (Images) result[0];
 				LOG.i(HomeActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
 				if((imgs == null) || (imgs.size() <= 0)) return;
+				skip += imgs.size();
 				
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
 						images.addAll(imgs.getAll());
-						skip += imgs.size();
 						adapter.notifyDataSetChanged();
 					}
 				});
@@ -96,8 +98,11 @@ public class HomeActivity extends ReflushBaseActivity {
 			}
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
 
-			String url = Utils.Http.generateThumbImageUrl(Utils.Images.getImageSizeScaleTo(image), images.get(position).getSource());
-			LOG.i(HomeActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
+			Image img = images.get(position);
+			
+			ImageSize loadSize = Utils.Images.getImageSizeScaleTo(image);
+			String url = Utils.Http.generateThumbImageUrl(loadSize, img.getSource());
+			LOG.i(HomeActivity.this, String.format(MESSAGE_LOAD_IMAGE, url, img.getWidth(), img.getHeight()));
 			imageLoader.displayImage(url, image, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
@@ -105,7 +110,7 @@ public class HomeActivity extends ReflushBaseActivity {
 					image.setAnimation(anim);
 					anim.start();
 				}
-			});
+			}, loadSize, loadSize);
 			return item;
 		}
 	}

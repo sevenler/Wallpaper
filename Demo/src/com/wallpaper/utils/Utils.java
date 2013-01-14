@@ -1,11 +1,19 @@
 package com.wallpaper.utils;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.provider.MediaStore.Images.Media;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
@@ -55,6 +63,22 @@ public class Utils {
 			if (height <= 0) height = displayMetrics.heightPixels;
 
 			return new ImageSize(width, height);
+		}
+		
+		public static final int BUFFER_SIZE = 8192;
+		
+		public static boolean saveImageOnDisc(Bitmap bmp, File targetFile, Context ctx) throws IOException, URISyntaxException {
+			OutputStream os = new BufferedOutputStream(new FileOutputStream(targetFile), BUFFER_SIZE);
+			boolean compressedSuccessfully = bmp.compress(Bitmap.CompressFormat.JPEG, 100, os);
+			
+			//保存到media数据库
+			ContentValues values = new ContentValues();
+			values.put(Media.DATA, targetFile.getAbsolutePath());
+			values.put(Media.MIME_TYPE, "image/jpg");
+			values.put(Media.DATE_TAKEN, System.currentTimeMillis());
+			ctx.getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
+			
+			return compressedSuccessfully;
 		}
 	}
 }

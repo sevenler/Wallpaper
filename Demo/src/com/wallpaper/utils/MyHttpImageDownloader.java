@@ -1,5 +1,6 @@
 package com.wallpaper.utils;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -31,11 +32,11 @@ public class MyHttpImageDownloader extends MyImageDownloader {
 	protected InputStream getStreamFromNetwork(URI imageUri) throws IOException {
 		GetMethod httpGet = null;
 		httpGet = getHttpGet(imageUri.toURL().toString(), null, null);
-		// int statusCode =
 		this.httpClient.executeMethod(httpGet);
-		// httpGet.releaseConnection();
 		LOG.i(this, String.format("loading image %s", imageUri.toURL().toString()));
-		return httpGet.getResponseBodyAsStream();
+		InputStream is = new BufferedInputStream(httpGet.getResponseBodyAsStream());
+		//httpGet.releaseConnection();
+		return is;
 	}
 
 	public String getStringFromNetwork(URI imageUri) throws IOException {

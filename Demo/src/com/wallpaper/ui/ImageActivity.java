@@ -12,25 +12,22 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.wallpaper.Const;
 import com.wallpaper.R;
+import com.wallpaper.model.Image;
 import com.wallpaper.model.Images;
 import com.wallpaper.task.ImgListUpdateFromTagTask;
 import com.wallpaper.task.OnProgressListenner;
 import com.wallpaper.utils.DisplayManager;
 import com.wallpaper.utils.LOG;
+import com.wallpaper.utils.Utils;
 
 public class ImageActivity extends ReflushBaseActivity {
 
-	private static final ImageSize IMAGE_SIZE = new ImageSize(
-			DisplayManager.getInstance().getWallpaperWidth(), 
-			DisplayManager.getInstance().getWallpaperHeight());
-	
 	protected Handler handler = new Handler();
 	protected SamplePagerAdapter adapter;
 
@@ -62,15 +59,17 @@ public class ImageActivity extends ReflushBaseActivity {
 	
 	@Override
 	protected void refreshToLoad(){
-		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, IMAGE_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
+		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, WALLPAPER_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
 				final Images imgs = (Images) result[0];
+				if(imgs == null) return;
 				LOG.i(ImageActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
+				skip = skip + imgs.size();
+				System.out.println("skip:" + skip);
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						skip = skip + images.size();
 						images.addAll(imgs.getAll());
 						adapter.notifyDataSetChanged();
 					}
@@ -87,6 +86,10 @@ public class ImageActivity extends ReflushBaseActivity {
 		.bitmapConfig(Bitmap.Config.ARGB_8888)
 		.cacheInMemory().cacheOnDisc().build();
 		
+		private ImageSize mLoadSize;
+		private SamplePagerAdapter(){
+			mLoadSize = new ImageSize(DisplayManager.getInstance().getDisplayWidth(), DisplayManager.getInstance().getDisplayHeight() / 2);
+		}
 		@Override
 		public int getCount() {
 			return images.size() - images.size() % mGridColumes;
@@ -97,11 +100,10 @@ public class ImageActivity extends ReflushBaseActivity {
 			View item = (View) getLayoutInflater().inflate(R.layout.item_image, null, false);
 			container.addView(item, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
-			image.setLayoutParams(new LinearLayout.LayoutParams(DISPLAY_SIZE.getWidth(), DISPLAY_SIZE.getHeight()));
 			
-			System.out.println("-------------------");
-			String url = images.get(position).getSource();
-			LOG.i(ImageActivity.this, String.format(MESSAGE_LOAD_IMAGE, url));
+			Image img = images.get(position);
+			String url = Utils.Http.generateThumbImageUrl(mLoadSize, img.getSource());
+			LOG.i(ImageActivity.this, String.format(MESSAGE_LOAD_IMAGE, url, mLoadSize.getWidth(), mLoadSize.getHeight()));
 			imageLoader.displayImage(url, image, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
@@ -109,7 +111,7 @@ public class ImageActivity extends ReflushBaseActivity {
 					image.setAnimation(anim);
 					anim.start();
 				}
-			});
+			}, mLoadSize, mLoadSize);
 			return item;
 		}
 

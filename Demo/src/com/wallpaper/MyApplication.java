@@ -10,7 +10,6 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.wallpaper.utils.DisplayManager;
 import com.wallpaper.utils.MyHashCodeFileNameGenerator;
-import com.wallpaper.utils.MyHttpImageDownloader;
 
 public class MyApplication extends Application {
 
@@ -29,7 +28,7 @@ public class MyApplication extends Application {
 			.discCacheFileNameGenerator(new MyHashCodeFileNameGenerator())
 			.memoryCacheKeyGenarator(new MyHashCodeFileNameGenerator())
 			.tasksProcessingOrder(QueueProcessingType.FIFO)
-			.imageDownloader(new MyHttpImageDownloader())
+			//.imageDownloader(new MyHttpImageDownloader())
 			.enableLogging()
 			.build();
 		ImageLoader.getInstance().init(config);

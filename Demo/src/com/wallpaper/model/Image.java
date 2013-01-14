@@ -18,6 +18,11 @@ public class Image {
 		this.size = size;
 	}
 
+	@Override
+	public String toString() {
+		return "Image [tag=" + tag + ", source=" + source + ", thumb=" + thumb + ", width=" + width + ", height=" + height + ", size=" + size + "]";
+	}
+
 	public String getSource() {
 		return source;
 	}

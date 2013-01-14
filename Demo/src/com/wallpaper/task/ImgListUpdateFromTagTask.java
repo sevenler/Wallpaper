@@ -2,6 +2,8 @@ package com.wallpaper.task;
 
 import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +23,9 @@ public class ImgListUpdateFromTagTask extends Thread {
 
 	private Images images = new Images();
 	private static final String MESSAGE_LOAD_URL = "update class from %s";
+	private static final String MESSAGE_GET_IMAGES = "get %s images {%s}";
+	
+	private static final String DATE_STRING = new SimpleDateFormat("yyyyMMdd060440").format(new Date());
 
 	public ImgListUpdateFromTagTask(String tag, ImageSize size, int skip, int limit) {
 		super();
@@ -47,7 +52,7 @@ public class ImgListUpdateFromTagTask extends Thread {
 	}
 
 	private JSONArray getCategory() throws JSONException, IOException {
-		String url = String.format(Const.FORMAT.CLASSES_ARGUMENT, tag, skip, size.getWidth(), size.getHeight(), limit, System.currentTimeMillis());
+		String url = String.format(Const.FORMAT.CLASSES_ARGUMENT, tag, skip, size.getWidth(), size.getHeight(), limit, DATE_STRING);
 		LOG.i(this, String.format(MESSAGE_LOAD_URL, url));
 		MyURLConnectionImageDownloader downloader = new MyURLConnectionImageDownloader();
 		String result = downloader.getStringFromNetwork(URI.create(url));
@@ -73,6 +78,7 @@ public class ImgListUpdateFromTagTask extends Thread {
 
 			images.add(new Image(tag, source, thumb, width, height, size));
 		}
+		LOG.i(this, String.format(MESSAGE_GET_IMAGES, length, images.toString()));
 	}
 
 	public ImgListUpdateFromTagTask setOnProgressListenner(OnProgressListenner onProgresssListenner) {
