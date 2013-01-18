@@ -2,11 +2,16 @@ package com.wallpaper;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 import android.test.AndroidTestCase;
 import android.util.Log;
 
 import com.nostra13.universalimageloader.core.assist.ImageSize;
+import com.wallpaper.model.Covers;
+import com.wallpaper.task.CoverListUpdateTask;
+import com.wallpaper.task.OnProgressListenner;
 import com.wallpaper.utils.LOG;
 import com.wallpaper.utils.MyHashCodeFileNameGenerator;
 import com.wallpaper.utils.MyHttpImageDownloader;
@@ -34,10 +39,24 @@ public class TestCase extends AndroidTestCase {
 		}
 	}
 
-	public void test() {
+	public void test() throws InterruptedException {
 		String url = "http://t2.baidu.com/it/u=3420700231,1907296026&fm=17";
 		
 		MyHashCodeFileNameGenerator generator = new MyHashCodeFileNameGenerator();
 		System.out.println("key:" + generator.generate(url, new ImageSize(100,100)));
+		
+		final CountDownLatch latch = new CountDownLatch(1);
+		new CoverListUpdateTask().setOnProgressListenner(new OnProgressListenner() {
+			@Override
+			public void onFinish(Object... result) {
+				Covers banners = (Covers)result[0];
+				Covers covers = (Covers)result[1];
+				System.out.println("" + Arrays.toString(banners.sort()) + "\n" + Arrays.toString(covers.sort()) );
+				
+				latch.countDown();
+			}
+		}).start();
+		
+		latch.await();
 	}
 }

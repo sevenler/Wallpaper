@@ -14,6 +14,8 @@ public class Const {
 		 * width,height,sec,src
 		 */
 		public static final String THUMB_ARGUMENT = "http://app.image.baidu.com/timg?list&appname=wallpaper&channelid=1426h&size=f%s_%s&quality=60&sec=%s&di=7EA1E08E71FF1A1FA058CDF57BBCFB65&src=%s";
+		
+		public static final String HOME_COVERS_LIST_URL = "http://app.image.baidu.com/app?reqtype=resource&appname=wallpaper";
 	}
 	
 	public static final class TAGS{

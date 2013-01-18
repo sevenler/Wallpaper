@@ -31,12 +31,23 @@ import com.wallpaper.utils.Utils;
 public class HomeActivity extends ReflushBaseActivity {
 	protected Handler handler = new Handler();
 	protected ClassAdapter adapter;
+	
+	private String mTag;
+	public static final String DATA_LOAD_TAG = "tag";
+	public static final String ACTION_SHOW_CLASS = "com.wallpaper.class.action";
+	
+	public static final String MESSAGE_GET_TAG = "get tag %s";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.ac_main);
+		Intent intent = getIntent();
+		Bundle bl = intent.getExtras();
+		mTag = (bl == null) ? Const.TAGS.TAG_CALSS_GRIL : bl.getString(DATA_LOAD_TAG);
+		LOG.i(this, String.format(MESSAGE_GET_TAG, mTag));
+		
 		GridView grid = (GridView) findViewById(R.id.grid_view);
 		grid.setOnScrollListener(new MyScrollListener(new onScrollListenner() {
 			@Override
@@ -62,7 +73,7 @@ public class HomeActivity extends ReflushBaseActivity {
 
 	@Override
 	protected void refreshToLoad() {
-		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, DISPLAY_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
+		new ImgListUpdateFromTagTask(mTag, DISPLAY_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
 				final Images imgs = (Images) result[0];

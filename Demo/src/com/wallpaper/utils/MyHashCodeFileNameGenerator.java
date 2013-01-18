@@ -16,4 +16,9 @@ public class MyHashCodeFileNameGenerator implements FileNameGenerator {
 		}
 		return MemoryCacheUtil.generateKey(String.valueOf(imageUri), imageSize);
 	}
+
+	@Override
+	public String generate(String imageUri) {
+		return String.valueOf(imageUri);
+	}
 }
