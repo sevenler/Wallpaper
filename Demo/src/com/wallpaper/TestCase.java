@@ -6,7 +6,9 @@ import java.net.URI;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.wallpaper.utils.LOG;
+import com.wallpaper.utils.MyHashCodeFileNameGenerator;
 import com.wallpaper.utils.MyHttpImageDownloader;
 import com.wallpaper.utils.MyURLConnectionImageDownloader;
 
@@ -33,6 +35,9 @@ public class TestCase extends AndroidTestCase {
 	}
 
 	public void test() {
-
+		String url = "http://t2.baidu.com/it/u=3420700231,1907296026&fm=17";
+		
+		MyHashCodeFileNameGenerator generator = new MyHashCodeFileNameGenerator();
+		System.out.println("key:" + generator.generate(url, new ImageSize(100,100)));
 	}
 }

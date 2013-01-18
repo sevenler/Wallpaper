@@ -7,10 +7,10 @@
         android:id="@+id/grid_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:gravity="fill"
-        android:horizontalSpacing="2dip"
+        android:gravity="center"
+        android:horizontalSpacing="5dip"
         android:numColumns="3"
         android:stretchMode="columnWidth"
+        android:listSelector="@drawable/live_img_click_normal"
         android:verticalSpacing="5dip" />
-
 </RelativeLayout>

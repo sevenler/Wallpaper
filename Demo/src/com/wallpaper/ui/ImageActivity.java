@@ -1,5 +1,6 @@
 package com.wallpaper.ui;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +29,12 @@ import com.wallpaper.utils.Utils;
 
 public class ImageActivity extends ReflushBaseActivity {
 
+	public static final String ACTION_IMAGE = "com.wallpaper.image.action";
+	public static final String DATA_IMAGE_LIST = "com.wallpaper.image.data";
+	public static final String DATA_IMAGE_INDEX_DEFUEAT = "com.wallpaper.image.data.index";
+
+	private static final String MESSAGE_GET_IMAGES = "get %s images, and choose %s";
+
 	protected Handler handler = new Handler();
 	protected SamplePagerAdapter adapter;
 
@@ -42,54 +49,66 @@ public class ImageActivity extends ReflushBaseActivity {
 		pager.setOnPageChangeListener(new OnPageChangeListener() {
 			@Override
 			public void onPageSelected(int arg0) {
-				//到底后隐藏方向图标
-				if( (arg0 == (adapter.getCount() - 1))){
+				if ((arg0 == (adapter.getCount() - 1))) {
 					refreshToLoad();
 				}
 			}
-			
+
 			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) { }
-			
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+			}
+
 			@Override
-			public void onPageScrollStateChanged(int arg0) { }
+			public void onPageScrollStateChanged(int arg0) {
+			}
 		});
-		refreshToLoad();
+
+		Intent intent = getIntent();
+		Bundle bl = intent == null ? null : intent.getExtras();
+		if (bl != null) {
+			Images imgs = bl.getSerializable(DATA_IMAGE_LIST) == null ? null : (Images) bl.getSerializable(DATA_IMAGE_LIST);
+			int index = (int) bl.getInt(DATA_IMAGE_INDEX_DEFUEAT, 0);
+			if (imgs != null) {
+				images.add(imgs);
+				LOG.i(this, String.format(MESSAGE_GET_IMAGES, imgs.size(), index));
+			}
+			pager.setCurrentItem(index);
+		} else refreshToLoad();
 	}
-	
+
 	@Override
-	protected void refreshToLoad(){
+	protected void refreshToLoad() {
 		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, WALLPAPER_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
 				final Images imgs = (Images) result[0];
-				if(imgs == null) return;
+				if (imgs == null)
+					return;
 				LOG.i(ImageActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
 				skip = skip + imgs.size();
 				System.out.println("skip:" + skip);
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						images.addAll(imgs.getAll());
+						images.add(imgs);
 						adapter.notifyDataSetChanged();
 					}
 				});
 			}
 		}).start();
 	}
-	
+
 	protected class SamplePagerAdapter extends PagerAdapter {
 
-		DisplayImageOptions options = new DisplayImageOptions.Builder()
-		.showStubImage(R.drawable.ic_launcher)
-		.showImageForEmptyUri(R.drawable.ic_launcher)
-		.bitmapConfig(Bitmap.Config.ARGB_8888)
-		.cacheInMemory().cacheOnDisc().build();
-		
+		DisplayImageOptions options = new DisplayImageOptions.Builder().showStubImage(R.drawable.ic_launcher).showImageForEmptyUri(R.drawable.ic_launcher).bitmapConfig(Bitmap.Config.ARGB_8888)
+				.cacheInMemory().cacheOnDisc().build();
+
 		private ImageSize mLoadSize;
-		private SamplePagerAdapter(){
+
+		private SamplePagerAdapter() {
 			mLoadSize = new ImageSize(DisplayManager.getInstance().getDisplayWidth(), DisplayManager.getInstance().getDisplayHeight() / 2);
 		}
+
 		@Override
 		public int getCount() {
 			return images.size() - images.size() % mGridColumes;
@@ -100,7 +119,7 @@ public class ImageActivity extends ReflushBaseActivity {
 			View item = (View) getLayoutInflater().inflate(R.layout.item_image, null, false);
 			container.addView(item, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
-			
+
 			Image img = images.get(position);
 			String url = Utils.Http.generateThumbImageUrl(mLoadSize, img.getSource());
 			LOG.i(ImageActivity.this, String.format(MESSAGE_LOAD_IMAGE, url, mLoadSize.getWidth(), mLoadSize.getHeight()));
@@ -124,10 +143,10 @@ public class ImageActivity extends ReflushBaseActivity {
 		public boolean isViewFromObject(View view, Object object) {
 			return view == object;
 		}
-		
+
 		@Override
 		public int getItemPosition(Object object) {
-		    return POSITION_NONE;
+			return POSITION_NONE;
 		}
 	}
 }

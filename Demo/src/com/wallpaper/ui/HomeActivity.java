@@ -1,5 +1,6 @@
 package com.wallpaper.ui;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -40,38 +44,51 @@ public class HomeActivity extends ReflushBaseActivity {
 				refreshToLoad();
 			}
 		}));
+		grid.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				Intent intent = new Intent(ImageActivity.ACTION_IMAGE);
+				Bundle bl = new Bundle();
+				bl.putSerializable(ImageActivity.DATA_IMAGE_LIST, images);
+				bl.putSerializable(ImageActivity.DATA_IMAGE_INDEX_DEFUEAT, arg2);
+				intent.putExtras(bl);
+				startActivity(intent);
+			}
+		});
 		adapter = new ClassAdapter();
 		grid.setAdapter(adapter);
 		refreshToLoad();
 	}
-	
+
 	@Override
-	protected void refreshToLoad(){
+	protected void refreshToLoad() {
 		new ImgListUpdateFromTagTask(Const.TAGS.TAG_CALSS_GRIL, DISPLAY_SIZE, skip, mLimitEachPage).setOnProgressListenner(new OnProgressListenner() {
 			@Override
 			public void onFinish(Object... result) {
 				final Images imgs = (Images) result[0];
 				LOG.i(HomeActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
-				if((imgs == null) || (imgs.size() <= 0)) return;
+				if ((imgs == null) || (imgs.size() <= 0))
+					return;
 				skip += imgs.size();
-				
+
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						images.addAll(imgs.getAll());
+						images.add(imgs);
 						adapter.notifyDataSetChanged();
 					}
 				});
 			}
 		}).start();
 	}
-	
+
 	private class ClassAdapter extends BaseAdapter {
-		DisplayImageOptions options = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.ic_launcher)
-				.showImageForEmptyUri(R.drawable.ic_launcher)
-				.bitmapConfig(Bitmap.Config.RGB_565)
+		DisplayImageOptions options = new DisplayImageOptions.Builder().showStubImage(R.drawable.ic_launcher).showImageForEmptyUri(R.drawable.ic_launcher).bitmapConfig(Bitmap.Config.RGB_565)
 				.cacheInMemory().cacheOnDisc().build();
+		
+		private static final int GRID_COLUME_NUMBER = 3;
+		private int mItemWidth = DISPLAY_SIZE.getWidth() / GRID_COLUME_NUMBER - (int)Utils.Densitys.dip2px(HomeActivity.this, 5);
+		private int mItemHeight = mItemWidth;
 
 		@Override
 		public int getCount() {
@@ -93,13 +110,14 @@ public class HomeActivity extends ReflushBaseActivity {
 			final View item;
 			if (convertView == null) {
 				item = (View) getLayoutInflater().inflate(R.layout.item_image_main, parent, false);
+				item.setLayoutParams(new AbsListView.LayoutParams(mItemWidth, mItemHeight));
 			} else {
 				item = (View) convertView;
 			}
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
 
 			Image img = images.get(position);
-			
+
 			ImageSize loadSize = Utils.Images.getImageSizeScaleTo(image);
 			String url = Utils.Http.generateThumbImageUrl(loadSize, img.getSource());
 			LOG.i(HomeActivity.this, String.format(MESSAGE_LOAD_IMAGE, url, img.getWidth(), img.getHeight()));
