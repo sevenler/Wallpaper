@@ -48,7 +48,7 @@ public class CoverActivity extends BaseActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.ac_main_cover);
+		setContentView(R.layout.ac_cover);
 		
 		final ViewPageAdapter mAdapter = new ViewPageAdapter();
 		ViewPager mPager = (ViewPager) findViewById(R.id.pager);
@@ -62,9 +62,9 @@ public class CoverActivity extends BaseActivity {
 		grid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				Intent intent = new Intent(HomeActivity.ACTION_SHOW_CLASS);
+				Intent intent = new Intent(ClassActivity.ACTION_SHOW_CLASS);
 				Bundle bl = new Bundle();
-				bl.putString(HomeActivity.DATA_LOAD_TAG, "" + covers.get(arg2).getTag());
+				bl.putString(ClassActivity.DATA_LOAD_TAG, "" + covers.get(arg2).getTag());
 				intent.putExtras(bl);
 				startActivity(intent);
 			}

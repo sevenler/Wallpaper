@@ -27,14 +27,10 @@
             android:name=".ui.CoverActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoTitleBar" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            
         </activity>
         <activity
-            android:name=".ui.HomeActivity"
+            android:name=".ui.ClassActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
@@ -51,6 +47,17 @@
                 <action android:name="com.wallpaper.image.action" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".ui.LocalImagesActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
