@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_gray">#242830</color>  
-    
+
+    <color name="bg_gray">#242830</color>
     <color name="light_blue">#00d8ff</color>
     <color name="light_yellow">#ffc20e</color>
+    <color name="light_brown">#0c212b</color>
+    <color name="light_smoke">#122e29</color>
+
 </resources>

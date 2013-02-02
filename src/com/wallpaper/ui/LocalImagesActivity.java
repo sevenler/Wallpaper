@@ -2,14 +2,17 @@ package com.wallpaper.ui;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -18,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -32,32 +36,89 @@ import com.wallpaper.utils.Utils;
 public class LocalImagesActivity extends BaseActivity {
 	protected Handler handler = new Handler();
 	protected ClassAdapter adapter;
-	
 	private String mTag;
-	public static final String DATA_LOAD_TAG = "tag";
-	public static final String ACTION_SHOW_CLASS = "com.wallpaper.class.action";
 	
-	public static final String MESSAGE_GET_TAG = "get tag %s";
-	protected static final String MESSAGE_LOAD_IMAGE = "loading image:%s [size:%sx%s]";
+	private boolean isSelectedMode = false;
 	
 	private List<String> images = new LinkedList<String>();
+	private Set<Integer> selectedImages = new HashSet<Integer>();
 	private String mDirectroy = "//mnt//sdcard//androidesk//onekeywallpapers";
-
+	
+	public static final String DATA_LOAD_TAG = "tag";
+	public static final String ACTION_SHOW_CLASS = "com.wallpaper.class.action";
+	public static final String MESSAGE_GET_TAG = "get tag %s";
+	public static final String MESSAGE_LOAD_IMAGE = "loading image:%s [size:%sx%s]";
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		
-		setContentView(R.layout.ac_class);
+		setContentView(R.layout.ac_class_selected);
 		Intent intent = getIntent();
 		Bundle bl = intent.getExtras();
 		mTag = (bl == null) ? Const.TAGS.TAG_CALSS_GRIL : bl.getString(DATA_LOAD_TAG);
 		LOG.i(this, String.format(MESSAGE_GET_TAG, mTag));
 		
+		final ViewGroup editBar = (ViewGroup)findViewById(R.id.panel_edit);
+		final ViewGroup normalBar = (ViewGroup)findViewById(R.id.panel_normal);
+		ImageButton edit = (ImageButton)normalBar.findViewById(R.id.button_edit);
+		edit.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				normalBar.setVisibility(View.GONE);
+				editBar.setVisibility(View.VISIBLE);
+				isSelectedMode = true;
+			}
+		});
+		ImageButton delete = (ImageButton)normalBar.findViewById(R.id.button_delete);
+		delete.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+			}
+		});
+		ImageButton allSelect = (ImageButton)editBar.findViewById(R.id.button_all_choose);
+		allSelect.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(images.size() == selectedImages.size()){
+					selectedImages.clear();
+				}else{
+					int size = images.size();
+					for (int i = 0; i < size; i++) {
+						selectedImages.add(i);
+					}
+				}
+				adapter.notifyDataSetInvalidated();
+			}
+		});
+		ImageButton allSelectCancel = (ImageButton)editBar.findViewById(R.id.button_all_choose_cancel);
+		allSelectCancel.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				normalBar.setVisibility(View.VISIBLE);
+				editBar.setVisibility(View.GONE);
+				isSelectedMode = false;
+				
+				selectedImages.clear();
+				adapter.notifyDataSetInvalidated();
+			}
+		});
+		
 		GridView grid = (GridView) findViewById(R.id.grid_view);
 		grid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				if(isSelectedMode){
+					ImageView imageSelected = (ImageView) arg1.findViewById(R.id.image_selected);
+					if(selectedImages.contains(arg2)) {
+						imageSelected.setVisibility(View.GONE);
+						selectedImages.remove(arg2);
+					}
+					else {
+						imageSelected.setVisibility(View.VISIBLE);
+						selectedImages.add(arg2);
+					}
+				}
 			}
 		});
 		grid.setOnScrollListener(new SpeedDetectorOnScrollListener());
@@ -93,7 +154,7 @@ public class LocalImagesActivity extends BaseActivity {
 		private static final int GRID_COLUME_NUMBER = 3;
 		private int mItemWidth = DISPLAY_SIZE.getWidth() / GRID_COLUME_NUMBER - (int)Utils.Densitys.dip2px(LocalImagesActivity.this, 5);
 		private int mItemHeight = mItemWidth;
-
+		
 		@Override
 		public int getCount() {
 			return images.size();
@@ -113,12 +174,20 @@ public class LocalImagesActivity extends BaseActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final View item;
 			if (convertView == null) {
-				item = (View) getLayoutInflater().inflate(R.layout.item_image_class, parent, false);
+				item = (View) getLayoutInflater().inflate(R.layout.item_image_class_select, parent, false);
 				item.setLayoutParams(new AbsListView.LayoutParams(mItemWidth, mItemHeight));
 			} else {
 				item = (View) convertView;
 			}
 			final ImageView image = (ImageView) item.findViewById(R.id.image);
+			ImageView imageSelected = (ImageView) item.findViewById(R.id.image_selected);
+			if(selectedImages.contains(position)) {
+				imageSelected.setVisibility(View.VISIBLE);
+			}
+			else {
+				imageSelected.setVisibility(View.GONE);
+			}
+			
 			String img = images.get(position);
 
 			ImageSize loadSize = Utils.Images.getImageSizeScaleTo(image);
