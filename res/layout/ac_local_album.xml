@@ -1,0 +1,79 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <GridView
+        android:id="@+id/grid_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:horizontalSpacing="15dip"
+        android:numColumns="2"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="15dip" />
+
+    <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+        <LinearLayout
+            android:id="@+id/panel_normal"
+            android:layout_width="fill_parent"
+            android:layout_height="50dip"
+            android:background="@color/light_brown"
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <ImageButton
+                android:id="@+id/button_edit"
+                android:layout_width="80dip"
+                android:layout_height="fill_parent"
+                android:background="@drawable/live_img_click"
+                android:padding="8dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_sure" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/panel_edit"
+            android:layout_width="fill_parent"
+            android:layout_height="50dip"
+            android:background="@color/light_brown"
+            android:visibility="gone" >
+
+            <ImageButton
+                android:id="@+id/button_all_choose_cancel"
+                android:layout_width="80dip"
+                android:layout_height="fill_parent"
+                android:layout_alignParentLeft="true"
+                android:background="@drawable/live_img_click"
+                android:padding="8dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_sure" />
+
+            <ImageButton
+                android:id="@+id/button_all_choose"
+                android:layout_width="80dip"
+                android:layout_height="fill_parent"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/live_img_click"
+                android:padding="8dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_all" />
+
+            <ImageButton
+                android:id="@+id/button_delete"
+                android:layout_width="80dip"
+                android:layout_height="fill_parent"
+                android:layout_toLeftOf="@id/button_all_choose"
+                android:background="@drawable/live_img_click"
+                android:padding="8dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_delete" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</FrameLayout>

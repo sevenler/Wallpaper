@@ -86,7 +86,6 @@ public class ImageActivity extends ReflushBaseActivity {
 					return;
 				LOG.i(ImageActivity.this, String.format(MESSAGE_GETED_IMAGES, imgs.size(), imgs.toString()));
 				skip = skip + imgs.size();
-				System.out.println("skip:" + skip);
 				handler.post(new Runnable() {
 					@Override
 					public void run() {

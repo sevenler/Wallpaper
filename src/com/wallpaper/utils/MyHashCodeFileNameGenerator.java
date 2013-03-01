@@ -7,7 +7,6 @@ import com.nostra13.universalimageloader.core.assist.MemoryCacheUtil;
 public class MyHashCodeFileNameGenerator implements FileNameGenerator {
 	@Override
 	public String generate(String imageUri, ImageSize imageSize) {
-		System.out.println("imageUri:" + imageUri);
 		if(imageUri.contains("src=")){
 			imageUri = imageUri.split("src=")[1];
 		}
@@ -19,7 +18,6 @@ public class MyHashCodeFileNameGenerator implements FileNameGenerator {
 		if(imageUri.contains("/")){
 			imageUri = imageUri.substring(imageUri.lastIndexOf("/") + 1);
 		}
-		System.out.println("imageUri:" + imageUri);
 		return MemoryCacheUtil.generateKey(String.valueOf(imageUri), imageSize);
 	}
 
