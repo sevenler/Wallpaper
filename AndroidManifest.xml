@@ -29,24 +29,26 @@
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name=".ui.ClassActivity"
+            android:name=".ui.TestActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoTitleBar" >
-            <intent-filter>
+            <!-- <intent-filter>
                 <action android:name="com.wallpaper.class.action" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter> -->
+            
+                        <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
         </activity>
         <activity
             android:name=".ui.ImageActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoTitleBar" >
-            <intent-filter>
-                <action android:name="com.wallpaper.image.action" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".ui.LocalFolderActivity"
@@ -57,11 +59,6 @@
             android:name=".ui.LocalAlbumActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoTitleBar" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 
