@@ -61,7 +61,7 @@ public class GridViewSpecial extends View {
     public static interface DrawAdapter {
         public void drawImage(Canvas canvas,
                 Bitmap b, int xPos, int yPos, int w, int h);
-		public void drawDecoration(Canvas canvas, int xPos, int yPos, int w,
+		public void drawDecoration(Canvas canvas, int index, int xPos, int yPos, int w,
 				int h);
         public boolean needsDecoration();
         
@@ -346,6 +346,7 @@ public class GridViewSpecial extends View {
 
         @Override
         public void onLongPress(MotionEvent e) {
+        	System.out.println("-------onLongPress--------");
             if (!canHandleEvent()) return;
             performLongClick();
         }
@@ -676,7 +677,7 @@ public class GridViewSpecial extends View {
         for (int i = startIndex; i < endIndex; i++) {
             //IImage image = mAllImages.getImageAt(i);
 
-            mDrawAdapter.drawDecoration(canvas, xPos, yPos,
+            mDrawAdapter.drawDecoration(canvas, i, xPos, yPos,
                     mSpec.mCellWidth, mSpec.mCellHeight);
 
             // Calculate next position

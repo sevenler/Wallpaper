@@ -1,17 +1,21 @@
 package com.wallpaper.ui;
 
 import java.io.File;
+import java.util.HashSet;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.ContextMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Toast;
 
 import com.wallpaper.R;
 import com.wallpaper.widget.GridViewSpecial;
@@ -23,23 +27,50 @@ import com.wallpaper.widget.ImageLoader;
 
 public class TestActivity extends BaseActivity implements
 		GridViewSpecial.Listener, GridViewSpecial.DrawAdapter {
-	private ImageLoader mLoader = null;
-	private IImageList mImageList = getImageList();
+	protected ImageLoader mLoader = null;
+	protected IImageList mImageList = getImageList();
+	protected GridViewSpecial grid= null;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mLoader = new ImageLoader(getContentResolver(), new Handler());
 		
 		setContentView(R.layout.ac_test);
-		GridViewSpecial grid = (GridViewSpecial)findViewById(R.id.grid);
+		grid = (GridViewSpecial)findViewById(R.id.grid);
 		grid.setAdapter(new ImageAdapter());
 		
 		grid.setListener(this);
 		grid.setDrawAdapter(this);
+		grid.setOnCreateContextMenuListener(
+                new CreateContextMenuListener());
 		
 		grid.start();
 	}
 	
+	private class CreateContextMenuListener implements
+			View.OnCreateContextMenuListener {
+		public void onCreateContextMenu(ContextMenu menu, View v,
+				ContextMenu.ContextMenuInfo menuInfo) {
+			onLongPressClicked();
+		}
+	}
+	
+	protected void onLongPressClicked(){
+		IImage image = getCurrentImage();
+		String title = (image == null ? "" : image.getTitle());
+		Toast.makeText(TestActivity.this, title, Toast.LENGTH_SHORT).show();
+	}
+	
+	private IImage getCurrentImage() {
+        int currentSelection = grid.getCurrentSelection();
+        if (currentSelection < 0
+                || currentSelection >= mImageList.getCount()) {
+            return null;
+        } else {
+            return mImageList.getImageAt(currentSelection);
+        }
+    }
 	
 	private static String IMAGE_DIR = "sdcard/androidesk/wallpapers"; 
 	public IImageList getImageList(){
@@ -80,9 +111,9 @@ public class TestActivity extends BaseActivity implements
 	}
 	
 	
-	private final Rect mSrcRect = new Rect();
-    private final Rect mDstRect = new Rect();
-    private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+	protected final Rect mSrcRect = new Rect();
+	protected final Rect mDstRect = new Rect();
+	protected final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 	
 	@Override
 	public void drawImage(Canvas canvas, Bitmap b, int xPos,
@@ -127,7 +158,7 @@ public class TestActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void drawDecoration(Canvas canvas, int xPos, int yPos, int w, int h) {
+	public void drawDecoration(Canvas canvas, int index, int xPos, int yPos, int w, int h) {
 	}
 	@Override
 	public boolean needsDecoration() {
@@ -142,12 +173,10 @@ public class TestActivity extends BaseActivity implements
 	private Uri mCropResultUri;
 	@Override
 	public void onImageClicked(int index) {
-		// TODO Auto-generated method stub
 	}
 	@Override
 	public void onImageTapped(int index) {
-		// TODO Auto-generated method stub
-		
+		onImageClicked(index);
 	}
 	@Override
 	public void onLayoutComplete(boolean changed) {
@@ -200,4 +229,7 @@ public class TestActivity extends BaseActivity implements
 	public boolean onCancelRequests(Object ob) {
 		return mLoader.cancel((IImage)ob);
 	}
+	
+	
+	
 }
