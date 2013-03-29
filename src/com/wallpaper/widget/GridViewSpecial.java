@@ -18,6 +18,8 @@ package com.wallpaper.widget;
 
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -36,11 +38,10 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.BaseAdapter;
 import android.widget.Scroller;
 
 public class GridViewSpecial extends View {
-    @SuppressWarnings("unused")
-    private static final String TAG = "GridViewSpecial";
     private static final float MAX_FLING_VELOCITY = 500000;
 
     public static interface Listener {
@@ -58,13 +59,26 @@ public class GridViewSpecial extends View {
     }
 
     public static interface DrawAdapter {
-        public void drawImage(Canvas canvas, IImage image,
+        public void drawImage(Canvas canvas,
                 Bitmap b, int xPos, int yPos, int w, int h);
 		public void drawDecoration(Canvas canvas, int xPos, int yPos, int w,
 				int h);
         public boolean needsDecoration();
         
-        public void onLoadImage(int index);
+        public boolean onLoadImage(int index, ImageLoader.LoadedCallback callback);
+        
+        /**
+         * 清理数据请求队列
+         * @return 返回清理掉的位置坐标
+         */
+        public int[] onClearLoaderQueue();
+        
+        /**
+         * 取消某条数据请求
+         * @param ob ob的数据类型取决于Adapter.getItem的数据类型
+         * @return 是否取消成功
+         */
+        public boolean onCancelRequests(Object ob);
     }
 
     public static final int INDEX_NONE = -1;
@@ -108,10 +122,10 @@ public class GridViewSpecial extends View {
     private ImageBlockManager mImageBlockManager;
 
     // These are set in set*() functions.
-    private ImageLoader mLoader;
     private Listener mListener = null;
     private DrawAdapter mDrawAdapter = null;
-    private IImageList mAllImages = new ImageList(2);
+    //private IImageList mAllImages = new ImageList(2);
+    private BaseAdapter mAdapter = null;
     private int mSizeChoice = 1;  // default is big cell size
 
     // These are set in onLayout().
@@ -157,10 +171,6 @@ public class GridViewSpecial extends View {
                 }
             };
 
-    public void setLoader(ImageLoader loader) {
-        mLoader = loader;
-    }
-
     public void setListener(Listener listener) {
         mListener = listener;
     }
@@ -169,9 +179,9 @@ public class GridViewSpecial extends View {
         mDrawAdapter = adapter;
     }
 
-    public void setImageList(IImageList list) {
-        mAllImages = list;
-        mCount = mAllImages.getCount();
+    public void setAdapter(BaseAdapter adapter) {
+    	mAdapter = adapter;
+        mCount = mAdapter.getCount();
     }
 
     public void setSizeChoice(int choice) {
@@ -179,7 +189,9 @@ public class GridViewSpecial extends View {
         mSizeChoice = choice;
     }
 
-    @Override
+    @SuppressLint("DrawAllocation")
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	@Override
     public void onLayout(boolean changed, int left, int top,
                          int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -227,7 +239,7 @@ public class GridViewSpecial extends View {
         }
 
         mImageBlockManager = new ImageBlockManager(mHandler, mRedrawCallback,
-                mAllImages, mLoader, mDrawAdapter, mSpec, mColumns, width,
+        		mAdapter, mDrawAdapter, mSpec, mColumns, width,
                 mOutline[OUTLINE_EMPTY]);
 
         mListener.onLayoutComplete(changed);
@@ -714,8 +726,7 @@ class ImageBlockManager {
     private final Runnable mRedrawCallback;  // Called after a row is loaded,
                                              // so GridViewSpecial can draw
                                              // again using the new images.
-    private final IImageList mImageList;
-    private final ImageLoader mLoader;
+    private final BaseAdapter mDataAdapter;
     private final GridViewSpecial.DrawAdapter mDrawAdapter;
     private final GridViewSpecial.LayoutSpec mSpec;
     private final int mColumns;  // Columns per row.
@@ -730,22 +741,22 @@ class ImageBlockManager {
     private int mStartRow = 0;
     private int mEndRow = 0;
 
-    ImageBlockManager(Handler handler, Runnable redrawCallback,
-            IImageList imageList, ImageLoader loader,
-            GridViewSpecial.DrawAdapter adapter,
+    @SuppressLint("UseSparseArrays")
+	ImageBlockManager(Handler handler, Runnable redrawCallback,
+    		BaseAdapter dataAdapter, 
+    		GridViewSpecial.DrawAdapter adapter,
             GridViewSpecial.LayoutSpec spec,
             int columns, int blockWidth, Bitmap outline) {
         mHandler = handler;
         mRedrawCallback = redrawCallback;
-        mImageList = imageList;
-        mLoader = loader;
+        mDataAdapter = dataAdapter;
         mDrawAdapter = adapter;
         mSpec = spec;
         mColumns = columns;
         mBlockWidth = blockWidth;
         mOutline = outline;
         mBlockHeight = mSpec.mCellSpacing + mSpec.mCellHeight;
-        mCount = imageList.getCount();
+        mCount = mDataAdapter.getCount();
         mRows = (mCount + mColumns - 1) / mColumns;
         mCache = new HashMap<Integer, ImageBlock>();
         mPendingRequest = 0;
@@ -778,7 +789,8 @@ class ImageBlockManager {
     }
 
     private void clearLoaderQueue() {
-        int[] tags = mLoader.clearQueue();
+    	int[] tags = mDrawAdapter.onClearLoaderQueue();
+        //int[] tags = mLoader.clearQueue();
         for (int pos : tags) {
             int row = pos / mColumns;
             int col = pos - row * mColumns;
@@ -1018,27 +1030,20 @@ class ImageBlockManager {
 
                 int pos = base + col;
 
-                mDrawAdapter.onLoadImage(pos);
-                final IImage image = mImageList.getImageAt(pos);
-                if (image != null) {
-                    // This callback is passed to ImageLoader. It will invoke
-                    // loadImageDone() in the main thread. We limit the callback
-                    // thread to be in this very short function. All other
-                    // processing is done in the main thread.
-                    final int colFinal = col;
-                    ImageLoader.LoadedCallback cb =
-                            new ImageLoader.LoadedCallback() {
-                                    public void run(final Bitmap b) {
-                                        mHandler.post(new Runnable() {
-                                            public void run() {
-                                                loadImageDone(image, b,
-                                                        colFinal);
-                                            }
-                                        });
-                                    }
-                                };
-                    // Load Image
-                    mLoader.getBitmap(image, cb, pos);
+                final int colFinal = col;
+                ImageLoader.LoadedCallback cb =
+                        new ImageLoader.LoadedCallback() {
+                                public void run(final Bitmap b) {
+                                    mHandler.post(new Runnable() {
+                                        public void run() {
+                                            loadImageDone(b,
+                                                    colFinal);
+                                        }
+                                    });
+                                }
+                            };
+                boolean loaded = mDrawAdapter.onLoadImage(pos,cb);
+                if (loaded) {
                     mRequestedMask |= (1 << col);
                     retVal += 1;
                 }
@@ -1053,7 +1058,7 @@ class ImageBlockManager {
         }
 
         // Called when an image is loaded.
-        private void loadImageDone(IImage image, Bitmap b,
+        private void loadImageDone(Bitmap b,
                 int col) {
             if (mBitmap == null) return;  // This block has been recycled.
 
@@ -1063,7 +1068,7 @@ class ImageBlockManager {
             final int xPos = leftSpacing
                     + (col * (mSpec.mCellWidth + spacing));
 
-            drawBitmap(image, b, xPos, yPos);
+            drawBitmap(b, xPos, yPos);
 
             if (b != null) {
                 b.recycle();
@@ -1084,8 +1089,8 @@ class ImageBlockManager {
 
         // Draw the loaded bitmap to the block bitmap.
         private void drawBitmap(
-                IImage image, Bitmap b, int xPos, int yPos) {
-            mDrawAdapter.drawImage(mCanvas, image, b, xPos, yPos,
+                Bitmap b, int xPos, int yPos) {
+            mDrawAdapter.drawImage(mCanvas, b, xPos, yPos,
                     mSpec.mCellWidth, mSpec.mCellHeight);
             mCanvas.drawBitmap(mOutline, xPos, yPos, null);
         }
@@ -1144,7 +1149,7 @@ class ImageBlockManager {
                 int mask = (1 << i);
                 if ((mRequestedMask & mask) != 0) {
                     int pos = (mRow * mColumns) + i;
-                    if (mLoader.cancel(mImageList.getImageAt(pos))) {
+                    if(mDrawAdapter.onCancelRequests(mDataAdapter.getItem(pos))){
                         mRequestedMask &= ~mask;
                         mPendingRequest--;
                     }

@@ -6,10 +6,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import com.wallpaper.R;
 import com.wallpaper.widget.GridViewSpecial;
@@ -21,15 +23,16 @@ import com.wallpaper.widget.ImageLoader;
 
 public class TestActivity extends BaseActivity implements
 		GridViewSpecial.Listener, GridViewSpecial.DrawAdapter {
-	
+	private ImageLoader mLoader = null;
+	private IImageList mImageList = getImageList();
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mLoader = new ImageLoader(getContentResolver(), new Handler());
 		
 		setContentView(R.layout.ac_test);
 		GridViewSpecial grid = (GridViewSpecial)findViewById(R.id.grid);
-		grid.setImageList(getImageList());
-		grid.setLoader(new ImageLoader(getContentResolver(), new Handler()));
+		grid.setAdapter(new ImageAdapter());
 		
 		grid.setListener(this);
 		grid.setDrawAdapter(this);
@@ -42,7 +45,6 @@ public class TestActivity extends BaseActivity implements
 	public IImageList getImageList(){
 		File file = new File(IMAGE_DIR);
 		File[] files = file.listFiles();
-		//IImageList images = new Image
 		ImageList images = new ImageList(files.length);
 		Image img = null;
 		for(File f : files){
@@ -52,6 +54,30 @@ public class TestActivity extends BaseActivity implements
 		return images;
 	}
 	
+	private class ImageAdapter extends BaseAdapter {
+
+		@Override
+		public int getCount() {
+			return mImageList.getCount();
+		}
+
+		@Override
+		public Object getItem(int paramInt) {
+			return mImageList.getImageAt(paramInt);
+		}
+
+		@Override
+		public long getItemId(int paramInt) {
+			return paramInt;
+		}
+
+		@Override
+		public View getView(int paramInt, View paramView,
+				ViewGroup paramViewGroup) {
+			return null;
+		}
+		
+	}
 	
 	
 	private final Rect mSrcRect = new Rect();
@@ -59,7 +85,7 @@ public class TestActivity extends BaseActivity implements
     private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 	
 	@Override
-	public void drawImage(Canvas canvas, IImage image, Bitmap b, int xPos,
+	public void drawImage(Canvas canvas, Bitmap b, int xPos,
 			int yPos, int w, int h) {
 		if (b != null) {
             // if the image is close to the target size then crop,
@@ -156,8 +182,22 @@ public class TestActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void onLoadImage(int index) {
-		// TODO Auto-generated method stub
-		
+	public boolean onLoadImage(int index, ImageLoader.LoadedCallback callback) {
+		IImage image = mImageList.getImageAt(index);
+		if(image != null){
+			mLoader.getBitmap(image, callback, index);
+			return true;
+		}else return false;
+	}
+
+	@Override
+	public int[] onClearLoaderQueue() {
+		int[] tags = mLoader.clearQueue();
+		return tags;
+	}
+
+	@Override
+	public boolean onCancelRequests(Object ob) {
+		return mLoader.cancel((IImage)ob);
 	}
 }

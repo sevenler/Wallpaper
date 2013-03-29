@@ -26,8 +26,6 @@ import android.os.Handler;
  * A dedicated decoding thread used by ImageGallery.
  */
 public class ImageLoader {
-    @SuppressWarnings("unused")
-    private static final String TAG = "ImageLoader";
 
     // Queue of work to do in the worker thread. The work is done in order.
     private final ArrayList<WorkItem> mQueue = new ArrayList<WorkItem>();
